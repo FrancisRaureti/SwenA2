@@ -395,6 +395,8 @@ public class Board {
 	 */	
 	public static void startTurn(Player p) {
 		suggestionPhase=false;
+		refutationPhase=false;
+		refutee = null;
 		p.moves=dice.roll();
 		for(Card c : cards) {
 			c.reset();
@@ -562,7 +564,6 @@ public class Board {
 	 * @param currentTurn
 	 */
 	public static void submitSuggest(Player currentTurn) {
-
 		for(Player suggested : players) {
 			if (suggested.name.equals(selectedCharacter.getName())) {
 				movePlayerTo(currentTurn, suggested);
@@ -571,7 +572,7 @@ public class Board {
 		suggestionPhase=false;
 		refutationPhase = true;
 		suggestion = new Suggestion((RoomCard)Board.roomFromPos(currentTurn.xpos,currentTurn.ypos),selectedCharacter,selectedWeapon);
-		refutee = GUI.nextPlayer(currentTurn);
+		refutee = nextRefutee(currentTurn);
 		setSelectedWeapon(null);
 		setSelectedCharacter(null);
 	}
@@ -587,6 +588,28 @@ public class Board {
 		}
 		currentTurn.refuted.add(refute);
 		
+		selectedWeapon = null;
+		selectedRoom = null;
+		selectedCharacter = null;
+		
+		
+		if(nextRefutee(currentTurn)==currentTurn) {
+			GUI.setCurrentTurn(GUI.nextPlayer(currentTurn));
+			startTurn(currentTurn);
+		}
+		
+	}
+	
+	public static Player nextRefutee(Player currentTurn) {
+		while (!refutee.canRefute(suggestion)) {			
+			refutee=GUI.nextPlayer(refutee);
+			if(refutee.canRefute(suggestion))return refutee;;
+			if(refutee==currentTurn) {
+				return currentTurn;
+			}
+			
+		}
+		return refutee;
 		
 	}
 	
